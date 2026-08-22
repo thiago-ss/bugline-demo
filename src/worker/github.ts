@@ -262,6 +262,34 @@ export function validateAndRedactDraft(raw: unknown): IssueDraft | null {
     reportSessionId: draft.reportSessionId.slice(0, 120),
   }) as IssueDraft;
 
+  // Normalize the context shape the agent may send: recentActions/actions,
+  // pathname/path, duration/durationMs, and default every list to [].
+  const rawContext = draft.context as Record<string, unknown>;
+  const actions = Array.isArray(rawContext.actions)
+    ? rawContext.actions
+    : Array.isArray(rawContext.recentActions)
+      ? rawContext.recentActions
+      : [];
+  const failedRequests = Array.isArray(rawContext.failedRequests)
+    ? (rawContext.failedRequests as Record<string, unknown>[]).map((entry) => ({
+        method: entry.method,
+        path: entry.path ?? entry.pathname,
+        status: entry.status,
+        durationMs: entry.durationMs ?? entry.duration,
+        traceId: entry.traceId,
+      }))
+    : [];
+  const errors = Array.isArray(rawContext.errors) ? rawContext.errors : [];
+  cleaned.context = {
+    route: String(cleaned.context.route ?? ""),
+    buildId: String(cleaned.context.buildId ?? ""),
+    browser: String(cleaned.context.browser ?? ""),
+    viewport: String(cleaned.context.viewport ?? ""),
+    actions: actions as BrowserContext["actions"],
+    failedRequests: failedRequests as BrowserContext["failedRequests"],
+    errors: errors as BrowserContext["errors"],
+  };
+
   if (cleaned.title.length < 5 || cleaned.reproductionSteps.length === 0) {
     return null;
   }
