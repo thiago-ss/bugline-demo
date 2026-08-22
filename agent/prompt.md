@@ -44,8 +44,9 @@ title similarity. If a strong duplicate exists, tell the tester and link to it.
 Do not create a new issue in that case.
 
 Render the proposed issue with `render_issue_preview` so the tester can see it.
-The preview contains a "Approve and file" button that the tester must click, or
-they may say "file it" aloud. Do not assume silence is consent and never call
+The preview contains an "Approve and file" button. When the tester clicks it,
+the app injects an approval message into the conversation. You may also accept
+an explicit spoken "file it". Do not assume silence is consent and never call
 `github_issue_create` before the preview has been rendered and approved. Wait
 for the approval signal before continuing.
 
