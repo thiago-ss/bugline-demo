@@ -19,6 +19,7 @@ import type { VoiceStatus } from "../components/BuglinePanel";
 export type AgentApi = {
   status: VoiceStatus;
   isSpeaking: boolean;
+  isActive: boolean;
   error?: string;
   start: () => Promise<void>;
   end: () => void;
@@ -57,6 +58,7 @@ function AgentInner({
   const { status: connectionStatus, message: connectionError } =
     useConversationStatus();
   const { isSpeaking } = useConversationMode();
+  const isActive = connectionStatus === "connected";
   const latest = useRef<RealAgentProps | null>(null);
   // Intentional latest-ref pattern, same as ConversationProvider's
   // defaultOptionsRef, so tool callbacks always see fresh handlers.
@@ -232,13 +234,14 @@ function AgentInner({
           ? "error"
           : "idle",
     isSpeaking,
+    isActive,
     error: connectionError,
     start: handleStart,
     end: endSession,
     sendContext: (text) => sendContextualUpdate(text),
     approve: approveTool,
     hasDraft: true,
-  }), [connectionStatus, isSpeaking, connectionError, handleStart, endSession, sendContextualUpdate, approveTool]);
+  }), [connectionStatus, isSpeaking, isActive, connectionError, handleStart, endSession, sendContextualUpdate, approveTool]);
 
   return (
     <>

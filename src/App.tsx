@@ -116,6 +116,7 @@ function AppShell() {
               onClear={clearAll}
               onUserInterject={api.sendContext}
               isSpeaking={api.isSpeaking}
+              sessionActive={api.isActive}
               onApprove={api.approve}
               hasDraft={api.hasDraft}
             />

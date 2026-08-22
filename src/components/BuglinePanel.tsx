@@ -20,6 +20,7 @@ type BuglinePanelProps = {
   onEndVoice: () => void;
   onClear: () => void;
   onUserInterject?: (text: string) => void;
+  sessionActive: boolean;
   isSpeaking: boolean;
 };
 
@@ -38,6 +39,7 @@ export function BuglinePanel({
   onEndVoice,
   onClear,
   onUserInterject,
+  sessionActive,
   isSpeaking,
 }: BuglinePanelProps) {
   const [copied, setCopied] = useState(false);
@@ -126,7 +128,7 @@ const chipGroups = [
         </section>
       )}
 
-      {onUserInterject && (
+      {onUserInterject && sessionActive && (
         <form
           className="text-fallback"
           data-testid="text-fallback"
