@@ -37,6 +37,7 @@ type RealAgentProps = {
   onToolActivity: (toolName: string, params: Record<string, unknown> | null) => void;
   onResult: (result: IssueResult | null) => void;
   onStatus: (status: VoiceStatus, error?: string) => void;
+  approveSessionActive?: boolean;
   onUserInterject?: (text: string) => void;
   children: (api: AgentApi) => React.ReactNode;
 };
@@ -53,7 +54,7 @@ function AgentInner({
   onUserInterject,
   children,
 }: RealAgentProps) {
-  const { startSession, endSession, sendContextualUpdate } =
+  const { startSession, endSession, sendUserMessage } =
     useConversationControls();
   const { status: connectionStatus, message: connectionError } =
     useConversationStatus();
@@ -73,6 +74,7 @@ function AgentInner({
       onToolActivity,
       onResult,
       onStatus,
+      approveSessionActive: isActive,
       onUserInterject,
       children,
     };
@@ -162,12 +164,16 @@ function AgentInner({
 
   const approveTool = useCallback((): string => {
     latest.current?.onToolActivity("approve_draft", null);
+    if (latest.current?.approveSessionActive) {
+      sendUserMessage("Approved. File the issue now.");
+    }
     return JSON.stringify({
       ok: true,
       approved: true,
-      message: "Approved. You may call github_issue_create now.",
+      message:
+        "Approval sent to the agent. It should call github_issue_create now.",
     });
-  }, []);
+  }, [sendUserMessage]);
 
   const resultTool = useCallback(
     (params: { result?: IssueResult }): string => {
@@ -238,10 +244,10 @@ function AgentInner({
     error: connectionError,
     start: handleStart,
     end: endSession,
-    sendContext: (text) => sendContextualUpdate(text),
+    sendContext: (text) => sendUserMessage(text),
     approve: approveTool,
     hasDraft: true,
-  }), [connectionStatus, isSpeaking, isActive, connectionError, handleStart, endSession, sendContextualUpdate, approveTool]);
+  }), [connectionStatus, isSpeaking, isActive, connectionError, handleStart, endSession, sendUserMessage, approveTool]);
 
   return (
     <>
