@@ -24,3 +24,5 @@ worker-configuration.d.ts
 *.njsproj
 *.sln
 *.sw?
+
+.dev.vars
