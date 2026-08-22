@@ -22,6 +22,7 @@ function AppShell() {
   const [draftFields, setDraftFields] = useState<Record<string, string>>({});
   const [result, setResult] = useState<IssueResult | null>(null);
   const [toolActivity, setToolActivity] = useState<string | null>(null);
+  const [renderError, setRenderError] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<{
     number: number;
     title: string;
@@ -46,6 +47,7 @@ function AppShell() {
     setDraftFields({});
     setResult(null);
     setToolActivity(null);
+    setRenderError(null);
     setDuplicate(null);
     setActivity([]);
   }
@@ -85,48 +87,61 @@ function AppShell() {
         setVoiceError(message);
       }}
     >
-      {(api) => (
-        <div className="app">
-          <BuglinePanel
-            context={context}
-            sessionId={sessionId}
-            status={status}
-            error={voiceError}
-            preview={preview}
-            draftFields={draftFields}
-            toolActivity={toolActivity}
-            duplicate={duplicate}
-            result={result}
-            onStartVoice={api.start}
-            onEndVoice={api.end}
-            onClear={clearAll}
-            isSpeaking={api.isSpeaking}
-            onApprove={api.approve}
-            hasDraft={api.hasDraft}
-          />
-          <div className="stage">
-            <Checkout
-              telemetry={telemetry}
-              onCouponApplied={handleCoupon}
-              onError={handleError}
+      {(api) => {
+        if (renderError) {
+          return (
+            <div className="stage" role="alert">
+              <h1>Bugline hit a rendering error</h1>
+              <p className="muted">{renderError}</p>
+              <button type="button" className="apply-button" onClick={clearAll}>
+                Reset panel
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="app">
+            <BuglinePanel
+              context={context}
+              sessionId={sessionId}
+              status={status}
+              error={voiceError}
+              preview={preview}
+              draftFields={draftFields}
+              toolActivity={toolActivity}
+              duplicate={duplicate}
+              result={result}
+              onStartVoice={api.start}
+              onEndVoice={api.end}
+              onClear={clearAll}
+              isSpeaking={api.isSpeaking}
+              onApprove={api.approve}
+              hasDraft={api.hasDraft}
             />
-            <section className="activity" aria-label="Session activity">
-              <h2>Session activity</h2>
-              {activity.length === 0 ? (
-                <p className="muted">
-                  No events yet. Apply the SAVE20 coupon to reproduce the seeded failure.
-                </p>
-              ) : (
-                <ul>
-                  {activity.map((line, index) => (
-                    <li key={`${index}-${line}`}>{line}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            <div className="stage">
+              <Checkout
+                telemetry={telemetry}
+                onCouponApplied={handleCoupon}
+                onError={handleError}
+              />
+              <section className="activity" aria-label="Session activity">
+                <h2>Session activity</h2>
+                {activity.length === 0 ? (
+                  <p className="muted">
+                    No events yet. Apply the SAVE20 coupon to reproduce the seeded failure.
+                  </p>
+                ) : (
+                  <ul>
+                    {activity.map((line, index) => (
+                      <li key={`${index}-${line}`}>{line}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      }}
     </VoiceAgentProvider>
   );
 }

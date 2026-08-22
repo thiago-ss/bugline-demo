@@ -56,6 +56,9 @@ function AgentInner({
     useConversationStatus();
   const { isSpeaking } = useConversationMode();
   const latest = useRef<RealAgentProps | null>(null);
+  // Intentional latest-ref pattern, same as ConversationProvider's
+  // defaultOptionsRef, so tool callbacks always see fresh handlers.
+  // eslint-disable-next-line react-hooks/refs
   useEffect(() => {
     latest.current = {
       telemetry,
@@ -106,11 +109,27 @@ function AgentInner({
       }
       setDrafting(false);
       latest.current!.onToolActivity("render_issue_preview", null);
+      const raw = params.draft as Partial<IssueDraft>;
+      const normalized = {
+        title: String(raw.title ?? ""),
+        summary: String(raw.summary ?? ""),
+        actualBehavior: String(raw.actualBehavior ?? ""),
+        expectedBehavior: String(raw.expectedBehavior ?? ""),
+        reproductionSteps: Array.isArray(raw.reproductionSteps)
+          ? raw.reproductionSteps.map((step) => String(step)).filter(Boolean)
+          : [],
+        severity:
+          raw.severity === "low" ||
+          raw.severity === "medium" ||
+          raw.severity === "high"
+            ? raw.severity
+            : "medium",
+      };
       const draft: IssueDraft = {
-        ...params.draft,
+        ...normalized,
         context: telemetry.snapshot(),
-        fingerprint: fingerprintDraft(params.draft),
-        reportSessionId: params.draft.reportSessionId ?? "unknown",
+        fingerprint: fingerprintDraft(normalized),
+        reportSessionId: String(raw.reportSessionId ?? "unknown"),
       };
       latest.current!.onPreview(draft);
       return JSON.stringify({
@@ -206,7 +225,13 @@ function AgentInner({
     hasDraft: true,
   }), [connectionStatus, isSpeaking, connectionError, handleStart, endSession, sendContextualUpdate, approveTool]);
 
-  return children(api) as React.ReactElement;
+  return (
+    <>
+      {/* Render-prop call; ref access happens only inside tool handlers. */}
+      {/* eslint-disable-next-line react-hooks/refs */}
+      {children(api)}
+    </>
+  );
 }
 
 export function VoiceAgentProvider(props: RealAgentProps) {

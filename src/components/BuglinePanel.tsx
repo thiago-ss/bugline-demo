@@ -53,14 +53,14 @@ export function BuglinePanel({
     return () => clearTimeout(timeout);
   }, [copied]);
 
-  const chipGroups = [
-    { label: "Route", value: context.route },
-    { label: "Build", value: context.buildId },
-    { label: "Browser", value: context.browser },
-    { label: "Viewport", value: context.viewport },
-    { label: "Actions", value: String(context.actions.length) },
-    { label: "Failed", value: String(context.failedRequests.length) },
-    { label: "Errors", value: String(context.errors.length) },
+const chipGroups = [
+    { label: "Route", value: context?.route ?? "—" },
+    { label: "Build", value: context?.buildId ?? "—" },
+    { label: "Browser", value: context?.browser ?? "—" },
+    { label: "Viewport", value: context?.viewport ?? "—" },
+    { label: "Actions", value: String(context?.actions?.length ?? 0) },
+    { label: "Failed", value: String(context?.failedRequests?.length ?? 0) },
+    { label: "Errors", value: String(context?.errors?.length ?? 0) },
   ];
 
   return (
@@ -135,7 +135,7 @@ export function BuglinePanel({
             <p><strong>Actual</strong>{preview.actualBehavior}</p>
             <p><strong>Expected</strong>{preview.expectedBehavior}</p>
             <ol>
-              {preview.reproductionSteps.map((step, index) => (
+              {(preview.reproductionSteps ?? []).map((step, index) => (
                 <li key={index}>{step}</li>
               ))}
             </ol>

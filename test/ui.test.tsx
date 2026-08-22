@@ -95,4 +95,35 @@ describe("BuglinePanel", () => {
     expect(screen.getByTestId("issue-preview").textContent).toContain("SAVE20 timeout");
     expect(screen.getByTestId("issue-result").textContent).toContain("Issue created");
   });
+
+  it("renders preview safely when reproductionSteps is missing", () => {
+    render(
+      <BuglinePanel
+        context={makeContext()}
+        sessionId="rpt_abc123"
+        status="connected"
+        draftFields={{}}
+        onApprove={() => undefined}
+        hasDraft={false}
+        preview={{
+          title: "SAVE20 timeout",
+          summary: "Coupon fails",
+          actualBehavior: "error",
+          expectedBehavior: "discount",
+          reproductionSteps: undefined as unknown as string[],
+          severity: "high",
+          context: makeContext(),
+          fingerprint: "f1234567",
+          reportSessionId: "rpt_abc123",
+        }}
+        result={null}
+        onStartVoice={() => undefined}
+        onEndVoice={() => undefined}
+        onClear={() => undefined}
+        isSpeaking={false}
+      />,
+    );
+    expect(screen.getByTestId("issue-preview").textContent).toContain("SAVE20 timeout");
+    expect(screen.queryByTestId("issue-preview")?.textContent).toContain("Actual");
+  });
 });
