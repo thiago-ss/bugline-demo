@@ -1,0 +1,74 @@
+{
+  "name": "Bugline",
+  "description": "Voice QA agent that files GitHub issues from a staging checkout.",
+  "environment": "production",
+  "prompt": "See agent/prompt.md for the full system prompt.",
+  "first_message": "Hi, I'm Bugline. I can turn a checkout failure into a GitHub issue. What happened?",
+  "language": "en",
+  "llm": "gemini-2.5-flash",
+  "temperature": 0,
+  "platform_settings": {
+    "auth": {
+      "enable_auth": true,
+      "allowlist": []
+    },
+    "privacy": {
+      "record_voice": true,
+      "retention_days": 30
+    },
+    "call_limits": {
+      "agent_concurrency_limit": 1,
+      "daily_limit": 100
+    }
+  },
+  "dynamic_variables": {
+    "build_id": "2026.08.22-staging-a7f3",
+    "environment": "staging",
+    "repository": "thiago-ss/bugline-demo",
+    "report_session_id": "rpt_demo"
+  },
+  "knowledge_base": [
+    "agent/knowledge-base/checkout-spec.md",
+    "agent/knowledge-base/issue-rubric.md",
+    "agent/knowledge-base/privacy-policy.md"
+  ],
+  "tools": [
+    {
+      "name": "capture_browser_context",
+      "type": "client",
+      "expects_response": true
+    },
+    {
+      "name": "render_issue_preview",
+      "type": "client",
+      "expects_response": true
+    },
+    {
+      "name": "render_submission_result",
+      "type": "client",
+      "expects_response": true
+    },
+    {
+      "name": "github_duplicate_search",
+      "type": "webhook",
+      "url": "https://bugline-demo.test-gg.workers.dev/api/webhook",
+      "method": "POST"
+    },
+    {
+      "name": "github_issue_create",
+      "type": "webhook",
+      "url": "https://bugline-demo.test-gg.workers.dev/api/webhook",
+      "method": "POST"
+    }
+  ],
+  "workflow": {
+    "stages": ["Intake", "Review", "Submit"],
+    "confirmation_required": true,
+    "post_call_analysis": {
+      "outcome": "string",
+      "issue_number": "integer",
+      "severity": "string",
+      "duplicate_found": "boolean"
+    }
+  }
+}

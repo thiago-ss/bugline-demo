@@ -1,0 +1,47 @@
+{
+  "stages": [
+    {
+      "id": "intake",
+      "label": "Intake",
+      "behavior": "Understand the report. Ask for the missing field if needed. Call capture_browser_context to collect sanitized evidence."
+    },
+    {
+      "id": "review",
+      "label": "Review",
+      "behavior": "Build the draft. Consult the knowledge base for expected behavior and severity. Ask one focused clarification when a required field is missing. Call github_duplicate_search. Render the preview with render_issue_preview. Ask explicitly for confirmation."
+    },
+    {
+      "id": "submit",
+      "label": "Submit",
+      "behavior": "After explicit spoken confirmation, call github_issue_create. Render the result with render_submission_result. Never create without confirmation; on decline keep the preview and stop."
+    }
+  ],
+  "post_call_analysis": {
+    "data_collection": {
+      "outcome": {
+        "type": "string",
+        "enum": ["created", "duplicate", "declined", "failed", "incomplete"],
+        "description": "Final outcome of the report session."
+      },
+      "issue_number": {
+        "type": "integer",
+        "description": "GitHub issue number when created or a duplicate was found."
+      },
+      "severity": {
+        "type": "string",
+        "enum": ["low", "medium", "high"],
+        "description": "Severity assigned from the rubric."
+      },
+      "duplicate_found": {
+        "type": "boolean",
+        "description": "Whether a duplicate issue was detected during review."
+      }
+    }
+  },
+  "dynamic_variables": {
+    "build_id": "Browser build ID from the app.",
+    "environment": "staging",
+    "repository": "thiago-ss/bugline-demo",
+    "report_session_id": "Per-session report identifier from the app."
+  }
+}

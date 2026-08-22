@@ -1,0 +1,153 @@
+{
+  "webhook_tools": [
+    {
+      "name": "github_duplicate_search",
+      "description": "Search open bug issues in the demo repo for duplicates of a draft report. Call this during review before rendering a preview.",
+      "method": "POST",
+      "url": "https://bugline-demo.test-gg.workers.dev/api/webhook",
+      "content_type": "application/json",
+      "request_headers": {
+        "Content-Type": "application/json"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": ["tool", "payload"],
+        "properties": {
+          "tool": { "type": "string", "const": "github_duplicate_search" },
+          "payload": {
+            "type": "object",
+            "required": ["fingerprint", "title", "summary"],
+            "properties": {
+              "fingerprint": { "type": "string", "description": "Server-computed draft fingerprint from the redacted content." },
+              "title": { "type": "string", "description": "Proposed issue title." },
+              "summary": { "type": "string", "description": "One or two sentence summary." }
+            }
+          }
+        }
+      },
+      "response_body_schema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": { "type": "integer" },
+                "title": { "type": "string" },
+                "score": { "type": "number" },
+                "url": { "type": "string" },
+                "fingerprint": { "type": "string" }
+              }
+            }
+          },
+          "error": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "github_issue_create",
+      "description": "Create a GitHub issue for a draft. Only call after explicit spoken confirmation. The worker rechecks the fingerprint and returns the existing issue instead of a duplicate.",
+      "method": "POST",
+      "url": "https://bugline-demo.test-gg.workers.dev/api/webhook",
+      "content_type": "application/json",
+      "request_headers": {
+        "Content-Type": "application/json"
+      },
+      "request_body_schema": {
+        "type": "object",
+        "required": ["tool", "payload"],
+        "properties": {
+          "tool": { "type": "string", "const": "github_issue_create" },
+          "payload": {
+            "type": "object",
+            "required": [
+              "draft"
+            ],
+            "properties": {
+              "draft": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "summary",
+                  "actualBehavior",
+                  "expectedBehavior",
+                  "reproductionSteps",
+                  "severity",
+                  "context",
+                  "reportSessionId"
+                ],
+                "properties": {
+                  "title": { "type": "string" },
+                  "summary": { "type": "string" },
+                  "actualBehavior": { "type": "string" },
+                  "expectedBehavior": { "type": "string" },
+                  "reproductionSteps": { "type": "array", "items": { "type": "string" } },
+                  "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+                  "context": {
+                    "type": "object",
+                    "description": "Browser context from capture_browser_context."
+                  },
+                  "reportSessionId": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "response_body_schema": {
+        "type": "object",
+        "properties": {
+          "ok": { "type": "boolean" },
+          "result": {
+            "type": "object",
+            "properties": {
+              "status": { "type": "string", "enum": ["created", "duplicate", "failed"] },
+              "number": { "type": "integer" },
+              "url": { "type": "string" },
+              "retryable": { "type": "boolean" },
+              "message": { "type": "string" }
+            }
+          },
+          "error": { "type": "string" }
+        }
+      }
+    }
+  ],
+  "client_tools": [
+    {
+      "name": "capture_browser_context",
+      "description": "Return sanitized browser context from the checkout app: route, build ID, browser, viewport, recent actions, failed requests, and errors.",
+      "expects_response": true,
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "render_issue_preview",
+      "description": "Render the proposed issue in the right-hand Bugline panel so the tester can review it. Returns success.",
+      "expects_response": true,
+      "parameters": {
+        "type": "object",
+        "required": ["draft"],
+        "properties": {
+          "draft": { "type": "object" }
+        }
+      }
+    },
+    {
+      "name": "render_submission_result",
+      "description": "Render the created or existing issue number and URL in the Bugline panel. Returns success.",
+      "expects_response": true,
+      "parameters": {
+        "type": "object",
+        "required": ["result"],
+        "properties": {
+          "result": { "type": "object" }
+        }
+      }
+    }
+  ]
+}
