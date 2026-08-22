@@ -33,6 +33,7 @@ type RealAgentProps = {
 
 function AgentInner({
   telemetry,
+  sessionId,
   onContext,
   onPreview,
   onResult,
@@ -110,6 +111,9 @@ function AgentInner({
       capture_browser_context: contextTool,
       render_issue_preview: previewTool,
       render_submission_result: resultTool,
+    },
+    dynamicVariables: {
+      report_session_id: sessionId,
     },
   });
 

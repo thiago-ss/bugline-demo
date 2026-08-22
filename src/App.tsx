@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { BuglinePanel } from "./components/BuglinePanel";
 import type { VoiceStatus } from "./components/BuglinePanel";
 import { Checkout } from "./components/Checkout";
+import { VoiceAgentProvider } from "./hooks/useVoiceAgent";
 import type { BrowserContext, IssueDraft, IssueResult } from "./shared/contracts";
 import { TelemetryBuffer } from "./telemetry/telemetry";
 import "./App.css";
@@ -16,7 +17,7 @@ function AppShell() {
   const [sessionId] = useState(() => `rpt_${Math.random().toString(36).slice(2, 10)}`);
   const [context, setContext] = useState<BrowserContext>(() => telemetry.snapshot());
   const [status, setStatus] = useState<VoiceStatus>("idle");
-  const [voiceError] = useState<string>();
+  const [voiceError, setVoiceError] = useState<string>();
   const [preview, setPreview] = useState<IssueDraft | null>(null);
   const [result, setResult] = useState<IssueResult | null>(null);
   const [duplicate, setDuplicate] = useState<{
@@ -46,40 +47,56 @@ function AppShell() {
   }
 
   return (
-    <div className="app">
-      <BuglinePanel
-        context={context}
-        sessionId={sessionId}
-        status={status}
-        error={voiceError}
-        preview={preview}
-        duplicate={duplicate}
-        result={result}
-        onStartVoice={() => setStatus("connecting")}
-        onEndVoice={() => setStatus("idle")}
-        onClear={clearAll}
-        isSpeaking={false}
-      />
-      <div className="stage">
-        <Checkout
-          telemetry={telemetry}
-          onCouponApplied={handleCoupon}
-          onError={handleError}
-        />
-        <section className="activity" aria-label="Session activity">
-          <h2>Session activity</h2>
-          {activity.length === 0 ? (
-            <p className="muted">No events yet. Apply the SAVE20 coupon to reproduce the seeded failure.</p>
-          ) : (
-            <ul>
-              {activity.map((line, index) => (
-                <li key={`${index}-${line}`}>{line}</li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-    </div>
+    <VoiceAgentProvider
+      telemetry={telemetry}
+      sessionId={sessionId}
+      onContext={(next) => setContext(next)}
+      onPreview={setPreview}
+      onResult={setResult}
+      onStatus={(next, message) => {
+        setStatus(next);
+        setVoiceError(message);
+      }}
+    >
+      {(api) => (
+        <div className="app">
+          <BuglinePanel
+            context={context}
+            sessionId={sessionId}
+            status={status}
+            error={voiceError}
+            preview={preview}
+            duplicate={duplicate}
+            result={result}
+            onStartVoice={api.start}
+            onEndVoice={api.end}
+            onClear={clearAll}
+            isSpeaking={api.isSpeaking}
+          />
+          <div className="stage">
+            <Checkout
+              telemetry={telemetry}
+              onCouponApplied={handleCoupon}
+              onError={handleError}
+            />
+            <section className="activity" aria-label="Session activity">
+              <h2>Session activity</h2>
+              {activity.length === 0 ? (
+                <p className="muted">
+                  No events yet. Apply the SAVE20 coupon to reproduce the seeded failure.
+                </p>
+              ) : (
+                <ul>
+                  {activity.map((line, index) => (
+                    <li key={`${index}-${line}`}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </div>
+        </div>
+      )}
+    </VoiceAgentProvider>
   );
 }
 
