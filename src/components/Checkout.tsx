@@ -211,6 +211,7 @@ export function Checkout({ telemetry, onCouponApplied, onError }: CheckoutProps)
             <button
               type="button"
               className="apply-button"
+              data-testid="apply-coupon"
               disabled={couponState.status === "applying"}
               onClick={applyCoupon}
             >

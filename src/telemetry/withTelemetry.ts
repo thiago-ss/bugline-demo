@@ -10,6 +10,7 @@ export function trackedFetch(
   const method = request.method;
   const path = new URL(request.url).pathname;
   const started = performance.now();
+
   return fetch(request).then(
     (response) => {
       if (!response.ok) {
