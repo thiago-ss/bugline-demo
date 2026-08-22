@@ -248,7 +248,7 @@ export function validateAndRedactDraft(raw: unknown): IssueDraft | null {
     return null;
   }
 
-  const cleaned: IssueDraft = {
+  const cleaned: IssueDraft = redactObject({
     title: draft.title.trim().slice(0, 180),
     summary: draft.summary.trim().slice(0, 2000),
     actualBehavior: draft.actualBehavior.trim().slice(0, 2000),
@@ -261,15 +261,16 @@ export function validateAndRedactDraft(raw: unknown): IssueDraft | null {
     context: redactObject(draft.context) as BrowserContext,
     fingerprint: draft.fingerprint,
     reportSessionId: draft.reportSessionId.slice(0, 120),
-  };
+  }) as IssueDraft;
 
   if (cleaned.title.length < 5 || cleaned.reproductionSteps.length === 0) {
     return null;
   }
 
-  const recomputed = fingerprintDraft(cleaned);
-  if (recomputed !== cleaned.fingerprint) {
-    return null;
-  }
+  // The client's fingerprint is computed before server-side redaction, so it
+  // cannot match the redacted content. Recompute the canonical fingerprint
+  // from the redacted draft and overwrite it: duplicates are still detected
+  // because the same redacted report produces the same fingerprint.
+  cleaned.fingerprint = fingerprintDraft(cleaned);
   return cleaned;
 }
