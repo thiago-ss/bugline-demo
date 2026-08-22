@@ -19,7 +19,9 @@ function AppShell() {
   const [status, setStatus] = useState<VoiceStatus>("idle");
   const [voiceError, setVoiceError] = useState<string>();
   const [preview, setPreview] = useState<IssueDraft | null>(null);
+  const [draftFields, setDraftFields] = useState<Record<string, string>>({});
   const [result, setResult] = useState<IssueResult | null>(null);
+  const [toolActivity, setToolActivity] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<{
     number: number;
     title: string;
@@ -41,7 +43,9 @@ function AppShell() {
     telemetry.reset();
     setContext(telemetry.snapshot());
     setPreview(null);
+    setDraftFields({});
     setResult(null);
+    setToolActivity(null);
     setDuplicate(null);
     setActivity([]);
   }
@@ -52,6 +56,29 @@ function AppShell() {
       sessionId={sessionId}
       onContext={(next) => setContext(next)}
       onPreview={setPreview}
+      onDraftStream={(field, value) =>
+        setDraftFields((current) => ({ ...current, [field]: value }))
+      }
+      onToolActivity={(toolName) => {
+        if (toolName === "__status__") return;
+        if (toolName === "approve_draft") {
+          setToolActivity("Approved. Filing the issue on GitHub.");
+          return;
+        }
+        if (toolName === "render_issue_preview") {
+          setToolActivity("Reviewing the draft with you.");
+          return;
+        }
+        if (toolName === "stream_draft") {
+          setToolActivity("Drafting the issue in real time.");
+          return;
+        }
+        setToolActivity(
+          toolName === "capture_browser_context"
+            ? "Collecting sanitized browser context."
+            : "Updating the panel.",
+        );
+      }}
       onResult={setResult}
       onStatus={(next, message) => {
         setStatus(next);
@@ -66,12 +93,16 @@ function AppShell() {
             status={status}
             error={voiceError}
             preview={preview}
+            draftFields={draftFields}
+            toolActivity={toolActivity}
             duplicate={duplicate}
             result={result}
             onStartVoice={api.start}
             onEndVoice={api.end}
             onClear={clearAll}
             isSpeaking={api.isSpeaking}
+            onApprove={api.approve}
+            hasDraft={api.hasDraft}
           />
           <div className="stage">
             <Checkout

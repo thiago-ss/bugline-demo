@@ -11,16 +11,35 @@
       },
       "request_body_schema": {
         "type": "object",
-        "required": ["tool", "payload"],
+        "required": [
+          "tool",
+          "payload"
+        ],
         "properties": {
-          "tool": { "type": "string", "const": "github_duplicate_search" },
+          "tool": {
+            "type": "string",
+            "const": "github_duplicate_search"
+          },
           "payload": {
             "type": "object",
-            "required": ["fingerprint", "title", "summary"],
+            "required": [
+              "fingerprint",
+              "title",
+              "summary"
+            ],
             "properties": {
-              "fingerprint": { "type": "string", "description": "Server-computed draft fingerprint from the redacted content." },
-              "title": { "type": "string", "description": "Proposed issue title." },
-              "summary": { "type": "string", "description": "One or two sentence summary." }
+              "fingerprint": {
+                "type": "string",
+                "description": "Server-computed draft fingerprint from the redacted content."
+              },
+              "title": {
+                "type": "string",
+                "description": "Proposed issue title."
+              },
+              "summary": {
+                "type": "string",
+                "description": "One or two sentence summary."
+              }
             }
           }
         }
@@ -28,21 +47,35 @@
       "response_body_schema": {
         "type": "object",
         "properties": {
-          "ok": { "type": "boolean" },
+          "ok": {
+            "type": "boolean"
+          },
           "candidates": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "number": { "type": "integer" },
-                "title": { "type": "string" },
-                "score": { "type": "number" },
-                "url": { "type": "string" },
-                "fingerprint": { "type": "string" }
+                "number": {
+                  "type": "integer"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "score": {
+                  "type": "number"
+                },
+                "url": {
+                  "type": "string"
+                },
+                "fingerprint": {
+                  "type": "string"
+                }
               }
             }
           },
-          "error": { "type": "string" }
+          "error": {
+            "type": "string"
+          }
         }
       }
     },
@@ -57,9 +90,15 @@
       },
       "request_body_schema": {
         "type": "object",
-        "required": ["tool", "payload"],
+        "required": [
+          "tool",
+          "payload"
+        ],
         "properties": {
-          "tool": { "type": "string", "const": "github_issue_create" },
+          "tool": {
+            "type": "string",
+            "const": "github_issue_create"
+          },
           "payload": {
             "type": "object",
             "required": [
@@ -79,17 +118,39 @@
                   "reportSessionId"
                 ],
                 "properties": {
-                  "title": { "type": "string" },
-                  "summary": { "type": "string" },
-                  "actualBehavior": { "type": "string" },
-                  "expectedBehavior": { "type": "string" },
-                  "reproductionSteps": { "type": "array", "items": { "type": "string" } },
-                  "severity": { "type": "string", "enum": ["low", "medium", "high"] },
+                  "title": {
+                    "type": "string"
+                  },
+                  "summary": {
+                    "type": "string"
+                  },
+                  "actualBehavior": {
+                    "type": "string"
+                  },
+                  "expectedBehavior": {
+                    "type": "string"
+                  },
+                  "reproductionSteps": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "low",
+                      "medium",
+                      "high"
+                    ]
+                  },
                   "context": {
                     "type": "object",
                     "description": "Browser context from capture_browser_context."
                   },
-                  "reportSessionId": { "type": "string" }
+                  "reportSessionId": {
+                    "type": "string"
+                  }
                 }
               }
             }
@@ -99,18 +160,37 @@
       "response_body_schema": {
         "type": "object",
         "properties": {
-          "ok": { "type": "boolean" },
+          "ok": {
+            "type": "boolean"
+          },
           "result": {
             "type": "object",
             "properties": {
-              "status": { "type": "string", "enum": ["created", "duplicate", "failed"] },
-              "number": { "type": "integer" },
-              "url": { "type": "string" },
-              "retryable": { "type": "boolean" },
-              "message": { "type": "string" }
+              "status": {
+                "type": "string",
+                "enum": [
+                  "created",
+                  "duplicate",
+                  "failed"
+                ]
+              },
+              "number": {
+                "type": "integer"
+              },
+              "url": {
+                "type": "string"
+              },
+              "retryable": {
+                "type": "boolean"
+              },
+              "message": {
+                "type": "string"
+              }
             }
           },
-          "error": { "type": "string" }
+          "error": {
+            "type": "string"
+          }
         }
       }
     }
@@ -131,9 +211,13 @@
       "expects_response": true,
       "parameters": {
         "type": "object",
-        "required": ["draft"],
+        "required": [
+          "draft"
+        ],
         "properties": {
-          "draft": { "type": "object" }
+          "draft": {
+            "type": "object"
+          }
         }
       }
     },
@@ -143,10 +227,45 @@
       "expects_response": true,
       "parameters": {
         "type": "object",
-        "required": ["result"],
+        "required": [
+          "result"
+        ],
         "properties": {
-          "result": { "type": "object" }
+          "result": {
+            "type": "object"
+          }
         }
+      }
+    },
+    {
+      "name": "stream_draft",
+      "description": "Stream one field of the issue draft (title, summary, actual, expected, steps, severity) as it is written. Call once per completed field, not with the full draft.",
+      "expects_response": true,
+      "parameters": {
+        "type": "object",
+        "required": [
+          "field",
+          "value"
+        ],
+        "properties": {
+          "field": {
+            "type": "string",
+            "description": "Draft field being written."
+          },
+          "value": {
+            "type": "string",
+            "description": "Field content."
+          }
+        }
+      }
+    },
+    {
+      "name": "approve_draft",
+      "description": "Called by the tester's click on Approve and file, or after spoken approval. Signals the agent that the rendered preview is approved and github_issue_create may be called exactly once.",
+      "expects_response": true,
+      "parameters": {
+        "type": "object",
+        "properties": {}
       }
     }
   ]

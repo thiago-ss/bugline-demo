@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ConversationProvider,
   useConversation,
@@ -7,7 +7,11 @@ import {
   useConversationMode,
   useConversationStatus,
 } from "@elevenlabs/react";
-import type { BrowserContext, IssueDraft, IssueResult } from "../shared/contracts";
+import type {
+  BrowserContext,
+  IssueDraft,
+  IssueResult,
+} from "../shared/contracts";
 import { fingerprintDraft } from "../shared/fingerprint";
 import type { TelemetryBuffer } from "../telemetry/telemetry";
 import type { VoiceStatus } from "../components/BuglinePanel";
@@ -19,6 +23,8 @@ export type AgentApi = {
   start: () => Promise<void>;
   end: () => void;
   sendContext: (text: string) => void;
+  approve: () => void;
+  hasDraft: boolean;
 };
 
 type RealAgentProps = {
@@ -26,6 +32,8 @@ type RealAgentProps = {
   sessionId: string;
   onContext: (context: BrowserContext) => void;
   onPreview: (draft: IssueDraft | null) => void;
+  onDraftStream: (field: string, value: string) => void;
+  onToolActivity: (toolName: string, params: Record<string, unknown> | null) => void;
   onResult: (result: IssueResult | null) => void;
   onStatus: (status: VoiceStatus, error?: string) => void;
   children: (api: AgentApi) => React.ReactNode;
@@ -36,6 +44,8 @@ function AgentInner({
   sessionId,
   onContext,
   onPreview,
+  onDraftStream,
+  onToolActivity,
   onResult,
   onStatus,
   children,
@@ -45,10 +55,22 @@ function AgentInner({
   const { status: connectionStatus, message: connectionError } =
     useConversationStatus();
   const { isSpeaking } = useConversationMode();
-  const latest = useRef({ onContext, onPreview, onResult });
+  const latest = useRef<RealAgentProps | null>(null);
   useEffect(() => {
-    latest.current = { onContext, onPreview, onResult };
-  }, [onContext, onPreview, onResult]);
+    latest.current = {
+      telemetry,
+      sessionId,
+      onContext,
+      onPreview,
+      onDraftStream,
+      onToolActivity,
+      onResult,
+      onStatus,
+      children,
+    };
+  });
+
+  const [drafting, setDrafting] = useState(false);
 
   const handleStart = useCallback(async () => {
     const response = await fetch("/api/agent/session");
@@ -70,7 +92,8 @@ function AgentInner({
   const contextTool = useCallback(
     (): string => {
       const snapshot = telemetry.snapshot();
-      latest.current.onContext(snapshot);
+      latest.current!.onContext(snapshot);
+      latest.current!.onToolActivity("capture_browser_context", null);
       return JSON.stringify(snapshot);
     },
     [telemetry],
@@ -81,35 +104,78 @@ function AgentInner({
       if (!params.draft) {
         return JSON.stringify({ ok: false, rendered: false });
       }
+      setDrafting(false);
+      latest.current!.onToolActivity("render_issue_preview", null);
       const draft: IssueDraft = {
         ...params.draft,
         context: telemetry.snapshot(),
         fingerprint: fingerprintDraft(params.draft),
         reportSessionId: params.draft.reportSessionId ?? "unknown",
       };
-      latest.current.onPreview(draft);
-      return JSON.stringify({ ok: true, rendered: true });
+      latest.current!.onPreview(draft);
+      return JSON.stringify({
+        ok: true,
+        rendered: true,
+        approved: false,
+        message: "Preview rendered. Waiting for tester approval.",
+      });
     },
     [telemetry],
   );
 
-  const resultTool = useCallback(
-    (params: { result?: IssueResult }): string => {
-      if (!params.result) return JSON.stringify({ ok: false });
-      latest.current.onResult(params.result);
+  const streamTool = useCallback(
+    (params: { field?: string; value?: string }): string => {
+      const field = params.field ?? "";
+      const value = params.value ?? "";
+      if (!field) return JSON.stringify({ ok: false, error: "field required" });
+      setDrafting(true);
+      latest.current!.onToolActivity("stream_draft", { field });
+      latest.current!.onDraftStream(field, value);
       return JSON.stringify({ ok: true });
     },
     [],
   );
 
+  const approveTool = useCallback((): string => {
+    latest.current?.onToolActivity("approve_draft", null);
+    return JSON.stringify({
+      ok: true,
+      approved: true,
+      message: "Approved. You may call github_issue_create now.",
+    });
+  }, []);
+
+  const resultTool = useCallback(
+    (params: { result?: IssueResult }): string => {
+      if (!params.result) return JSON.stringify({ ok: false });
+      setDrafting(false);
+      latest.current?.onToolActivity("render_submission_result", null);
+      latest.current?.onResult(params.result);
+      return JSON.stringify({ ok: true });
+    },
+    [],
+  );
+
+  useEffect(() => {
+      latest.current?.onToolActivity("__status__", {
+      status: connectionStatus,
+      speaking: isSpeaking,
+      drafting,
+    });
+  }, [connectionStatus, isSpeaking, drafting]);
+
   useConversationClientTool("capture_browser_context", contextTool);
   useConversationClientTool("render_issue_preview", previewTool);
+  useConversationClientTool("stream_draft", streamTool);
+  useConversationClientTool("approve_draft", approveTool);
   useConversationClientTool("render_submission_result", resultTool);
 
   useConversation({
     clientTools: {
       capture_browser_context: contextTool,
       render_issue_preview: previewTool,
+      stream_draft: streamTool,
+      approve_draft: approveTool,
       render_submission_result: resultTool,
     },
     dynamicVariables: {
@@ -124,7 +190,7 @@ function AgentInner({
     if (connectionStatus === "error") onStatus("error", connectionError);
   }, [connectionStatus, connectionError, onStatus]);
 
-  const api: AgentApi = {
+  const api: AgentApi = useMemo<AgentApi>(() => ({
     status:
       connectionStatus === "connected"
         ? "connected"
@@ -136,9 +202,11 @@ function AgentInner({
     start: handleStart,
     end: endSession,
     sendContext: (text) => sendContextualUpdate(text),
-  };
+    approve: approveTool,
+    hasDraft: true,
+  }), [connectionStatus, isSpeaking, connectionError, handleStart, endSession, sendContextualUpdate, approveTool]);
 
-  return <>{children(api)}</>;
+  return children(api) as React.ReactElement;
 }
 
 export function VoiceAgentProvider(props: RealAgentProps) {

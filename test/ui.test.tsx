@@ -70,6 +70,9 @@ describe("BuglinePanel", () => {
         context={makeContext()}
         sessionId="rpt_abc123"
         status="connected"
+        draftFields={{}}
+        onApprove={() => undefined}
+        hasDraft={false}
         preview={{
           title: "SAVE20 timeout",
           summary: "Coupon fails",

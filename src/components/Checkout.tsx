@@ -137,7 +137,9 @@ export function Checkout({ telemetry, onCouponApplied, onError }: CheckoutProps)
     <main className="checkout" data-testid="checkout">
       <header className="checkout-header">
         <div>
-          <span className="eyebrow">Staging checkout · build {telemetry.snapshot().buildId}</span>
+          <span className="micro-label">
+            Staging checkout · build {telemetry.snapshot().buildId}
+          </span>
           <h1>Checkout</h1>
         </div>
         <span className="stage-badge">Demo environment</span>

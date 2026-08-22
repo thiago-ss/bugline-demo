@@ -290,6 +290,18 @@ export function validateAndRedactDraft(raw: unknown): IssueDraft | null {
     errors: errors as BrowserContext["errors"],
   };
 
+  // The environment fields must come from the capture tool. Rejecting drafts
+  // that omit them forces the agent to collect browser evidence instead of
+  // inventing or skipping it.
+  if (
+    !cleaned.context.route ||
+    !cleaned.context.buildId ||
+    !cleaned.context.browser ||
+    !cleaned.context.viewport
+  ) {
+    return null;
+  }
+
   if (cleaned.title.length < 5 || cleaned.reproductionSteps.length === 0) {
     return null;
   }

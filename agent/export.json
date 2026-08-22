@@ -59,10 +59,24 @@
       "type": "webhook",
       "url": "https://bugline-demo.test-gg.workers.dev/api/webhook",
       "method": "POST"
+    },
+    {
+      "name": "stream_draft",
+      "type": "client",
+      "expects_response": true
+    },
+    {
+      "name": "approve_draft",
+      "type": "client",
+      "expects_response": true
     }
   ],
   "workflow": {
-    "stages": ["Intake", "Review", "Submit"],
+    "stages": [
+      "Intake",
+      "Review",
+      "Submit"
+    ],
     "confirmation_required": true,
     "post_call_analysis": {
       "outcome": "string",

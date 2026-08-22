@@ -134,4 +134,21 @@ describe("github helpers", () => {
     expect(cleaned!.summary).toContain("[token-redacted]");
     expect(cleaned!.context.route).toBe("/checkout");
   });
+
+  it("rejects drafts with empty environment fields", () => {
+    const draft = {
+      ...baseDraft,
+      context: {
+        route: "",
+        buildId: "",
+        browser: "",
+        viewport: "",
+        actions: [],
+        failedRequests: [],
+        errors: [],
+      },
+    };
+    const cleaned = validateAndRedactDraft(draft);
+    expect(cleaned).toBeNull();
+  });
 });

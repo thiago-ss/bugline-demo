@@ -10,8 +10,12 @@ type BuglinePanelProps = {
   status: VoiceStatus;
   error?: string;
   preview?: IssueDraft | null;
+  draftFields: Record<string, string>;
+  toolActivity?: string | null;
   duplicate?: { number: number; title: string; url: string } | null;
   result?: IssueResult | null;
+  onApprove: () => void;
+  hasDraft: boolean;
   onStartVoice: () => void;
   onEndVoice: () => void;
   onClear: () => void;
@@ -24,8 +28,11 @@ export function BuglinePanel({
   status,
   error,
   preview,
+  draftFields,
+  toolActivity,
   duplicate,
   result,
+  onApprove,
   onStartVoice,
   onEndVoice,
   onClear,
@@ -60,7 +67,7 @@ export function BuglinePanel({
     <aside className="bugline" data-testid="bugline">
       <header className="bugline-header">
         <div>
-          <span className="eyebrow">Voice QA agent</span>
+          <span className="micro-label">Voice QA agent</span>
           <h2>Bugline</h2>
         </div>
         <button
@@ -79,6 +86,11 @@ export function BuglinePanel({
           <span className="voice-dot" />
           <span data-testid="voice-status">{statusLabel(status, isSpeaking)}</span>
         </div>
+        {toolActivity && (
+          <p className="tool-activity" data-testid="tool-activity" role="status">
+            {toolActivity}
+          </p>
+        )}
         {status === "idle" ? (
           <button type="button" className="voice-button" onClick={onStartVoice}>
             Start voice session
@@ -92,7 +104,8 @@ export function BuglinePanel({
         <p className="session-line">Session {sessionId.slice(0, 12)}</p>
       </section>
 
-      <section className="chips" aria-label="Captured context">
+      <section className="chip-panel" aria-label="Captured context">
+        <h3 className="panel-title">Captured context</h3>
         {chipGroups.map((chip) => (
           <div className="chip" key={chip.label}>
             <span>{chip.label}</span>
@@ -103,7 +116,7 @@ export function BuglinePanel({
 
       {duplicate && (
         <section className="duplicate-note" data-testid="duplicate-note">
-          <span>Existing issue found</span>
+          <span className="micro-label">Existing issue found</span>
           <a href={duplicate.url} target="_blank" rel="noreferrer">
             #{duplicate.number} — {duplicate.title}
           </a>
@@ -114,10 +127,31 @@ export function BuglinePanel({
         <section className="preview" data-testid="issue-preview">
           <div className="preview-head">
             <h3>Issue preview</h3>
-            <span className="severity severity-{preview.severity}">{preview.severity}</span>
+            <span className={`severity severity-${preview.severity}`}>{preview.severity}</span>
           </div>
           <p className="preview-title">{preview.title}</p>
           <p className="preview-summary">{preview.summary}</p>
+          <div className="preview-body">
+            <p><strong>Actual</strong>{preview.actualBehavior}</p>
+            <p><strong>Expected</strong>{preview.expectedBehavior}</p>
+            <ol>
+              {preview.reproductionSteps.map((step, index) => (
+                <li key={index}>{step}</li>
+              ))}
+            </ol>
+          </div>
+          <button
+            type="button"
+            className="approve-button"
+            data-testid="approve-issue"
+            onClick={onApprove}
+            aria-describedby="approve-hint"
+          >
+            Approve and file
+          </button>
+          <span id="approve-hint" className="approve-hint">
+            Submits to GitHub. The agent waits for this before filing.
+          </span>
           <button
             type="button"
             className="copy-button"
@@ -131,13 +165,25 @@ export function BuglinePanel({
         </section>
       )}
 
+      {draftFields && Object.keys(draftFields).length > 0 && !preview && (
+        <section className="draft-stream" data-testid="draft-stream">
+          <h3>Drafting issue</h3>
+          {Object.entries(draftFields).map(([field, value]) => (
+            <p key={field}>
+              <span>{field}</span>
+              <strong>{value}</strong>
+            </p>
+          ))}
+        </section>
+      )}
+
       {result && (
         <section className="result" data-testid="issue-result">
           {result.status === "created" && (
             <>
               <p className="result-title">Issue created</p>
               <a href={result.url} target="_blank" rel="noreferrer">
-                #{result.number} on GitHub
+                Open #{result.number} on GitHub
               </a>
             </>
           )}
@@ -145,7 +191,7 @@ export function BuglinePanel({
             <>
               <p className="result-title">Existing issue</p>
               <a href={result.url} target="_blank" rel="noreferrer">
-                #{result.number} on GitHub
+                Open #{result.number} on GitHub
               </a>
             </>
           )}
