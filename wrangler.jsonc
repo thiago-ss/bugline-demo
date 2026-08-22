@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "bugline-demo",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-08-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "!/api/*"]
+  },
+  "vars": {
+    "BUILD_ID": "2026.08.22-staging-a7f3"
+  },
+  "upload_source_maps": true
+}

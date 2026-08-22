@@ -1,0 +1,390 @@
+.app {
+  display: grid;
+  grid-template-columns: minmax(300px, 360px) 1fr;
+  min-height: 100%;
+}
+
+.bugline {
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bugline-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.bugline-header h2,
+.checkout-header h1,
+.activity h2 {
+  margin: 2px 0 0;
+  letter-spacing: 0;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.voice-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.voice-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.voice-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b9b4a8;
+}
+
+.voice-connected .voice-dot, .voice-speaking .voice-dot {
+  background: var(--ok);
+}
+.voice-connecting .voice-dot {
+  background: #c7912a;
+}
+.voice-error .voice-dot {
+  background: var(--warn);
+}
+
+.voice-button {
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  padding: 10px 12px;
+  font-weight: 600;
+}
+
+.voice-button.secondary {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+.voice-error {
+  margin: 0;
+  color: var(--warn);
+  font-size: 13px;
+}
+
+.session-line {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.chip span {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.chip strong {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.duplicate-note, .result, .preview {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.duplicate-note {
+  border-color: #d9b45c;
+  background: #fbf6e8;
+}
+
+.preview {
+  background: var(--accent-soft);
+}
+
+.preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.preview-head h3, .result-title {
+  margin: 0;
+  font-size: 14px;
+}
+
+.preview-title {
+  margin: 0;
+  font-weight: 600;
+}
+
+.preview-summary {
+  margin: 0;
+  color: var(--muted);
+}
+
+.severity {
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #eee;
+}
+
+.copy-button {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.result a, .duplicate-note a {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.result-error {
+  margin: 0;
+  color: var(--warn);
+}
+
+.stage {
+  padding: 32px 40px 48px;
+  max-width: 920px;
+}
+
+.stage-badge {
+  border: 1px solid #d9b45c;
+  color: #7a5a12;
+  background: #fbf6e8;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.checkout {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.checkout-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.cart {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.cart-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.cart-row:last-child {
+  border-bottom: 0;
+}
+
+.product-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.product-copy span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper button {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+}
+
+.stepper span {
+  min-width: 20px;
+  text-align: center;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fields input {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: var(--panel);
+}
+
+.fields label:nth-of-type(3) {
+  grid-column: 1 / -1;
+}
+
+.coupon-row {
+  display: flex;
+  gap: 8px;
+}
+
+.coupon-row input {
+  flex: 1;
+}
+
+.apply-button, .order-button {
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  padding: 10px 16px;
+}
+
+.apply-button:disabled {
+  opacity: 0.6;
+}
+
+.coupon-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--warn);
+  font-size: 13px;
+}
+
+.summary {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.summary-line.positive {
+  color: var(--ok);
+}
+
+.summary-line.total {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.order-button {
+  margin-top: 6px;
+  padding: 12px;
+}
+
+.order-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.activity {
+  margin-top: 28px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.activity ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
+  .bugline {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .stage {
+    padding: 24px 20px 40px;
+  }
+}
