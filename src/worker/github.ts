@@ -26,6 +26,13 @@ function extractFingerprint(body: string | null | undefined): string | undefined
   return match?.[1];
 }
 
+/** Exported for the worker's create path so idempotency pre-check reuses it. */
+export function extractFingerprintFromBody(
+  body: string | null | undefined,
+): string | undefined {
+  return extractFingerprint(body);
+}
+
 function queryString(params: Record<string, string | number | undefined>): string {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
@@ -49,6 +56,7 @@ export async function fetchOpenBugIssues(
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "bugline-demo-worker",
       },
     },
   );
@@ -180,6 +188,7 @@ export async function createGitHubIssue(
       Accept: "application/vnd.github+json",
       "X-GitHub-Api-Version": "2022-11-28",
       "Content-Type": "application/json",
+      "User-Agent": "bugline-demo-worker",
     },
     body: JSON.stringify({
       title: draft.title.slice(0, 180),

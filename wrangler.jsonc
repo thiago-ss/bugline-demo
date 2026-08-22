@@ -11,10 +11,11 @@
     "directory": "./dist/client",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "!/api/*"]
+    "run_worker_first": ["/api/*"]
   },
   "vars": {
-    "BUILD_ID": "2026.08.22-staging-a7f3"
+    "BUILD_ID": "2026.08.22-staging-a7f3",
+    "GITHUB_REPO": "thiago-ss/bugline-demo"
   },
   "upload_source_maps": true
 }

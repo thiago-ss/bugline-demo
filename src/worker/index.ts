@@ -8,6 +8,7 @@ import type {
 import { redactObject } from "../shared/redact";
 import {
   createGitHubIssue,
+  extractFingerprintFromBody,
   fetchOpenBugIssues,
   rankDuplicates,
   validateAndRedactDraft,
@@ -179,6 +180,21 @@ async function handleCreateIssue(
     return error("Draft failed validation.");
   }
   try {
+    // Idempotency pre-check: an open issue with this exact fingerprint already
+    // exists, so return it instead of creating a duplicate.
+    const existing = await fetchOpenBugIssues(env.GITHUB_TOKEN, env.GITHUB_REPO);
+    const duplicate = existing.find(
+      (issue) => extractFingerprintFromBody(issue.body) === draft.fingerprint,
+    );
+    if (duplicate) {
+      return json({
+        result: {
+          status: "duplicate",
+          number: duplicate.number,
+          url: duplicate.html_url,
+        },
+      });
+    }
     const result = await createGitHubIssue(env.GITHUB_TOKEN, env.GITHUB_REPO, draft);
     return json({ result });
   } catch (reason) {
