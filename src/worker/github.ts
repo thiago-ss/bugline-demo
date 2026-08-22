@@ -241,7 +241,6 @@ export function validateAndRedactDraft(raw: unknown): IssueDraft | null {
     (draft.severity !== "low" &&
       draft.severity !== "medium" &&
       draft.severity !== "high") ||
-    typeof draft.fingerprint !== "string" ||
     typeof draft.reportSessionId !== "string" ||
     !draft.context
   ) {
@@ -259,7 +258,7 @@ export function validateAndRedactDraft(raw: unknown): IssueDraft | null {
       .slice(0, 12),
     severity: draft.severity,
     context: redactObject(draft.context) as BrowserContext,
-    fingerprint: draft.fingerprint,
+    fingerprint: typeof draft.fingerprint === "string" ? draft.fingerprint : "",
     reportSessionId: draft.reportSessionId.slice(0, 120),
   }) as IssueDraft;
 

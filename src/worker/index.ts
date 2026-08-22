@@ -295,12 +295,23 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
   }
   const rawBody = await request.text();
   const signature = request.headers.get("elevenlabs-signature");
-  if (!verifyWebhookSignature(rawBody, signature, env.WEBHOOK_SECRET)) {
+  // ElevenLabs webhook tools send an optional `elevenlabs-signature` when the
+  // workspace webhook is configured with HMAC. Until that secret is configured,
+  // the demo accepts a dedicated shared key header sent by the agent's tool.
+  const headerKey = request.headers.get("x-bugline-webhook-key");
+  const headerOk =
+    headerKey != null &&
+    headerKey.length > 0 &&
+    headerKey === env.WEBHOOK_SECRET;
+  if (!headerOk && !verifyWebhookSignature(rawBody, signature, env.WEBHOOK_SECRET)) {
     return error("Invalid signature.", 401);
   }
-  const body = (await JSON.parse(rawBody).catch(() => null)) as
-    | { tool?: string; payload?: Record<string, unknown> }
-    | null;
+  let body: { tool?: string; payload?: Record<string, unknown> } | null = null;
+  try {
+    body = JSON.parse(rawBody) as { tool?: string; payload?: Record<string, unknown> };
+  } catch {
+    body = null;
+  }
   if (!body || typeof body.tool !== "string") {
     return error("Invalid webhook payload.", 400);
   }
