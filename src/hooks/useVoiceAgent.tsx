@@ -36,6 +36,7 @@ type RealAgentProps = {
   onToolActivity: (toolName: string, params: Record<string, unknown> | null) => void;
   onResult: (result: IssueResult | null) => void;
   onStatus: (status: VoiceStatus, error?: string) => void;
+  onUserInterject?: (text: string) => void;
   children: (api: AgentApi) => React.ReactNode;
 };
 
@@ -48,6 +49,7 @@ function AgentInner({
   onToolActivity,
   onResult,
   onStatus,
+  onUserInterject,
   children,
 }: RealAgentProps) {
   const { startSession, endSession, sendContextualUpdate } =
@@ -69,6 +71,7 @@ function AgentInner({
       onToolActivity,
       onResult,
       onStatus,
+      onUserInterject,
       children,
     };
   });
@@ -175,6 +178,16 @@ function AgentInner({
     [],
   );
 
+  const userInterjectTool = useCallback(
+    (params: { text?: string }): string => {
+      const text = String(params.text ?? "").trim();
+      if (!text) return JSON.stringify({ ok: false, error: "text required" });
+      latest.current?.onUserInterject?.(text);
+      return JSON.stringify({ ok: true });
+    },
+    [],
+  );
+
   useEffect(() => {
       latest.current?.onToolActivity("__status__", {
       status: connectionStatus,
@@ -187,6 +200,7 @@ function AgentInner({
   useConversationClientTool("render_issue_preview", previewTool);
   useConversationClientTool("stream_draft", streamTool);
   useConversationClientTool("approve_draft", approveTool);
+  useConversationClientTool("user_interject", userInterjectTool);
   useConversationClientTool("render_submission_result", resultTool);
 
   useConversation({
@@ -195,6 +209,7 @@ function AgentInner({
       render_issue_preview: previewTool,
       stream_draft: streamTool,
       approve_draft: approveTool,
+      user_interject: userInterjectTool,
       render_submission_result: resultTool,
     },
     dynamicVariables: {

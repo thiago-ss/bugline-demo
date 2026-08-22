@@ -19,6 +19,7 @@ type BuglinePanelProps = {
   onStartVoice: () => void;
   onEndVoice: () => void;
   onClear: () => void;
+  onUserInterject?: (text: string) => void;
   isSpeaking: boolean;
 };
 
@@ -36,9 +37,11 @@ export function BuglinePanel({
   onStartVoice,
   onEndVoice,
   onClear,
+  onUserInterject,
   isSpeaking,
 }: BuglinePanelProps) {
   const [copied, setCopied] = useState(false);
+  const [textInput, setTextInput] = useState("");
   const fingerprint = fingerprintDraft({
     title: preview?.title ?? "",
     summary: preview?.summary ?? "",
@@ -121,6 +124,32 @@ const chipGroups = [
             #{duplicate.number} — {duplicate.title}
           </a>
         </section>
+      )}
+
+      {onUserInterject && (
+        <form
+          className="text-fallback"
+          data-testid="text-fallback"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (!textInput.trim()) return;
+            onUserInterject(textInput);
+            setTextInput("");
+          }}
+        >
+          <label htmlFor="text-fallback-input">Interrupt the agent</label>
+          <div className="text-fallback-row">
+            <input
+              id="text-fallback-input"
+              value={textInput}
+              onChange={(event) => setTextInput(event.target.value)}
+              placeholder="Type a correction or approval"
+            />
+            <button type="submit" className="copy-button">
+              Send
+            </button>
+          </div>
+        </form>
       )}
 
       {preview && (

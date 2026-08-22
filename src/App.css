@@ -493,6 +493,35 @@
   font-size: 12px;
 }
 
+.text-fallback {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel);
+}
+
+.text-fallback label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.text-fallback-row {
+  display: flex;
+  gap: 8px;
+}
+
+.text-fallback input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
 .result a,
 .duplicate-note a {
   color: var(--accent);

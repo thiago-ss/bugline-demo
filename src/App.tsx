@@ -114,6 +114,7 @@ function AppShell() {
               onStartVoice={api.start}
               onEndVoice={api.end}
               onClear={clearAll}
+              onUserInterject={api.sendContext}
               isSpeaking={api.isSpeaking}
               onApprove={api.approve}
               hasDraft={api.hasDraft}
